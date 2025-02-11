@@ -14,8 +14,8 @@ You have to implement the following features:
 - Provide an endpoint to list the saved notes (i.e. uploaded markdown files).
 - Return the HTML version of the Markdown note (rendered note) through another endpoint.
 
-Todo:
-- [ ] Create a simple gin server
-- [ ] Add a simple home endpoint that response with a message `Welcome to Markdown parser`
+**Todo:**
+- [X] Create a simple gin server
+- [X] Add a simple home endpoint that response with a message `Welcome to Markdown parser`
 - [ ] Create an endpoint that lets users upload a markdown file.
 - [ ] Parse the markdown file and find spelling mistakes 
