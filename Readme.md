@@ -17,5 +17,9 @@ You have to implement the following features:
 **Todo:**
 - [X] Create a simple gin server
 - [X] Add a simple home endpoint that response with a message `Welcome to Markdown parser`
-- [ ] Create an endpoint that lets users upload a markdown file.
-- [ ] Parse the markdown file and find spelling mistakes 
+- [X] Create an endpoint that lets users upload a markdown file.
+- [X] Parse the markdown file and find spelling mistakes 
+- [ ] Stream response instead of returning all at once. For better UX
+- [ ] Add a simple UI to upload a markdown file and see the result.
+- [ ] Add a simple UI to list all the uploaded markdown files.
+- [ ] Add a simple UI to see the HTML version of the Markdown note.
