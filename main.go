@@ -7,6 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+
+	"main.go/routes"
 )
 
 func main() {
@@ -21,6 +23,8 @@ func main() {
 	}
 
 	router := gin.Default()
+	// Register Routes
+	routes.MarkdownParserRoutes(router)
 
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK,
