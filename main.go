@@ -23,9 +23,9 @@ func main() {
 	}
 
 	router := gin.Default()
+	router.Use(gin.Logger())
 	// Register Routes
 	routes.MarkdownParserRoutes(router)
-
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK,
 			gin.H{
