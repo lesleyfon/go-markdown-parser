@@ -33,23 +33,23 @@ var (
 func init() {
 	config := SpellCheckConfig{
 		LevenshteinThreshold: 2,
-		FuzzyModelDepth:      4,
+		FuzzyModelDepth:      1,
 		FuzzyModelThreshold:  1,
 	}
 
-	// Load dictionary once
-	dictionary = utils.StaticDict()
+	// Load dictionary from file
+	dictionary = utils.ImportEnglishDictionary()
 	if dictionary == nil {
 		panic("Failed to load dictionary")
 	}
 
-	// Train model once
+	// Configure and train model
 	fuzzyModel = fuzzy.NewModel()
 	fuzzyModel.SetThreshold(config.FuzzyModelThreshold)
 	fuzzyModel.SetDepth(config.FuzzyModelDepth)
 	fuzzyModel.Train(dictionary)
 
-	// Populate the dictionary map. This is done to avoid loading the dictionary multiple times
+	// Populate map
 	for _, word := range dictionary {
 		dictionaryMap[strings.ToLower(word)] = true
 	}
@@ -176,7 +176,7 @@ func SpellCheckMarkdown() gin.HandlerFunc {
 		// LOG Success
 		log.Printf("Spell check completed successfully. %d words checked, %d misspelled words found.", len(parsedText), len(misspelledWords))
 
-		// Return the modified HTML
+		// Respond with the modified HTML
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(modifiedHTML))
 
 	}
