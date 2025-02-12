@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"sync"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -26,6 +27,7 @@ type JwtSignedDetails struct {
 }
 
 var SECRET_KEY string = os.Getenv("SECRET_KEY")
+var secretKeyBytes = []byte(SECRET_KEY)
 
 // GenerateAllTokens generates a new token and refresh token for a user
 func GenerateAllTokens(
@@ -36,52 +38,62 @@ func GenerateAllTokens(
 	signedRefreshToken string,
 	err error,
 ) {
+	// Create claims once and reuse
+	now := time.Now().Local()
+	standardClaims := jwt.StandardClaims{
+		ExpiresAt: now.Add(time.Hour * 12).Unix(),
+	}
+
+	refreshStandardClaims := jwt.StandardClaims{
+		ExpiresAt: now.Add(time.Hour * 100).Unix(),
+	}
 
 	// Create the claims for the token
 	claims := &JwtSignedDetails{
-		Uid:   uid,
-		Email: email,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(12)).Unix(),
-		},
+		Uid:            uid,
+		Email:          email,
+		StandardClaims: standardClaims,
 	}
 
 	// Create the claims for the refresh token
 	refreshClaims := &JwtSignedDetails{
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(100)).Unix(),
-		},
+		StandardClaims: refreshStandardClaims,
 	}
 
-	// Create the token
-	token, err := jwt.NewWithClaims(
-		jwt.SigningMethodHS256,
-		claims,
-	).SignedString(
-		[]byte(SECRET_KEY),
-	)
+	// Create both tokens in parallel using goroutines
+	var tokenErr, refreshTokenErr error
+	var token, refreshToken string
 
-	// Create the refresh token
-	refreshToken, refreshTokenErr := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(SECRET_KEY))
+	var wg sync.WaitGroup
+	wg.Add(2)
 
-	if err != nil {
-		// Log the error
-		log.Panic(err)
+	go func() {
+		defer wg.Done()
+		token, tokenErr = jwt.NewWithClaims(
+			jwt.SigningMethodHS256,
+			claims,
+		).SignedString(secretKeyBytes)
+	}()
 
-		// Return the error
-		return
+	go func() {
+		defer wg.Done()
+		refreshToken, refreshTokenErr = jwt.NewWithClaims(
+			jwt.SigningMethodHS256,
+			refreshClaims,
+		).SignedString(secretKeyBytes)
+	}()
+
+	wg.Wait()
+
+	// Check for errors
+	if tokenErr != nil {
+		return "", "", tokenErr
 	}
 	if refreshTokenErr != nil {
-		// Log the error
-		log.Panic(refreshTokenErr)
-
-		// Return the error
-		return
+		return "", "", refreshTokenErr
 	}
 
-	// Return the token and refresh token
-	return token, refreshToken, err
-
+	return token, refreshToken, nil
 }
 
 func UpdateTokens(signedToken string, signedRefreshedToken string, userId string) (*models.User, error) {
