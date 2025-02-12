@@ -1,5 +1,8 @@
 import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 export const Route = createRootRoute({
 	component: () => (
@@ -12,7 +15,9 @@ export const Route = createRootRoute({
 					To login
 				</Link>
 			</div>
-			<Outlet />
+			<QueryClientProvider client={queryClient}>
+				<Outlet />
+			</QueryClientProvider>
 			<TanStackRouterDevtools />
 		</>
 	),
