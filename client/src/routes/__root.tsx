@@ -14,6 +14,9 @@ export const Route = createRootRoute({
 				<Link to="/login" className="[&.active]:font-bold">
 					To login
 				</Link>
+				<Link to="/signup" className="[&.active]:font-bold">
+					To signup
+				</Link>
 			</div>
 			<QueryClientProvider client={queryClient}>
 				<Outlet />

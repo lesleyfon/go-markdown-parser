@@ -1,16 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { loginFn } from "../lib/authAPIFn";
+import { signupFn } from "../lib/authAPIFn";
 import { inputFieldData } from "../lib/constants";
 import { useMemo } from "react";
 import { AuthenticationStatus } from "../components/AuthenticationStatus";
 
-export const Route = createFileRoute("/login")({
-	component: Login,
+export const Route = createFileRoute("/signup")({
+	component: Signup,
 });
 
-export default function Login() {
+export default function Signup() {
 	const form = useForm({
 		defaultValues: {
 			email: "",
@@ -22,9 +22,9 @@ export default function Login() {
 	const queryClient = useQueryClient();
 
 	const mutation = useMutation({
-		mutationFn: loginFn,
+		mutationFn: signupFn,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["login"] });
+			queryClient.invalidateQueries({ queryKey: ["signup"] });
 		},
 	});
 
@@ -58,7 +58,7 @@ export default function Login() {
 
 	return (
 		<div>
-			<h1>Login</h1>
+			<h1>Signup</h1>
 			<form
 				onSubmit={(e) => {
 					e.preventDefault();
