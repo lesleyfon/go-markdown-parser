@@ -11,7 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"golang.org/x/crypto/bcrypt"
 	"main.go/database"
 	"main.go/models"
 	"main.go/utils"
@@ -19,15 +18,6 @@ import (
 
 var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
 var validate = validator.New()
-
-func MaskPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	if err != nil {
-		log.Panic(err.Error())
-		return "", err
-	}
-	return string(bytes), nil
-}
 
 func SignUpController() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -81,7 +71,7 @@ func SignUpController() gin.HandlerFunc {
 			return
 		}
 
-		password, err := MaskPassword(*user.Password)
+		password, err := utils.HashPassword(*user.Password)
 
 		if err != nil {
 			log.Println("Error masking password: ", err.Error())
@@ -202,6 +192,19 @@ func LogIn() gin.HandlerFunc {
 			}).Decode(&retrieveUser)
 
 		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				log.Println("Email not found")
+				c.JSON(
+					http.StatusBadRequest,
+					gin.H{
+						"status":  http.StatusBadRequest,
+						"message": "Email not found",
+						"error":   err.Error(),
+					},
+				)
+				return
+			}
+
 			log.Println("Error occurred while retrieving user: ", err.Error())
 			c.JSON(
 				http.StatusInternalServerError,
@@ -213,7 +216,6 @@ func LogIn() gin.HandlerFunc {
 			)
 			return
 		}
-
 		passwordIsValid, msg := utils.ConfirmPassword(*user.Password, *retrieveUser.Password)
 
 		if !passwordIsValid {
@@ -239,7 +241,6 @@ func LogIn() gin.HandlerFunc {
 			)
 			return
 		}
-
 		token, refreshToken, _ := utils.GenerateAllTokens(
 			retrieveUser.User_id,
 			*retrieveUser.Email,
