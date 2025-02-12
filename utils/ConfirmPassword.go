@@ -6,15 +6,30 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func ConfirmPassword(userPassword string, passwordEntered string) (bool, string) {
-	err := bcrypt.CompareHashAndPassword([]byte(passwordEntered), []byte(userPassword))
-	check := true
-	msg := ""
+// Default cost is 10, but we can adjust based on our needs
+// Lower cost = faster but less secure
+// Higher cost = slower but more secure
+const BcryptCost = 10
+
+func ConfirmPassword(userPassword string, hashedPassword string) (bool, string) {
+
+	// Compare the passwords
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(userPassword))
 
 	if err != nil {
 		log.Println("Error comparing password: ", err.Error())
-		msg = "Looks like you entered a wrong password"
-		check = false
+		return false, "Invalid password"
 	}
-	return check, msg
+
+	return true, ""
+}
+
+func HashPassword(password string) (string, error) {
+	// Generate password hash
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), BcryptCost)
+	if err != nil {
+		return "", err
+	}
+
+	return string(bytes), nil
 }
