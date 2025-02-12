@@ -171,3 +171,108 @@ func SignUpController() gin.HandlerFunc {
 		})
 	}
 }
+
+func LogIn() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+		var user models.User
+		var retrieveUser models.User
+
+		defer cancel()
+
+		err := c.BindJSON(&user)
+
+		if err != nil {
+			log.Println("Error binding JSON: ", err.Error())
+			c.JSON(
+				http.StatusBadRequest,
+				gin.H{
+					"status":  http.StatusBadRequest,
+					"message": "Error occurred while binding JSON",
+					"error":   err.Error(),
+				},
+			)
+			return
+		}
+
+		err = userCollection.FindOne(ctx,
+			bson.M{
+				"email": user.Email,
+			}).Decode(&retrieveUser)
+
+		if err != nil {
+			log.Println("Error occurred while retrieving user: ", err.Error())
+			c.JSON(
+				http.StatusInternalServerError,
+				gin.H{
+					"status":  http.StatusInternalServerError,
+					"message": "Error occurred while retrieving user",
+					"error":   err.Error(),
+				},
+			)
+			return
+		}
+
+		passwordIsValid, msg := utils.ConfirmPassword(*user.Password, *retrieveUser.Password)
+
+		if !passwordIsValid {
+			log.Println("Invalid password: ", msg)
+			c.JSON(
+				http.StatusBadRequest,
+				gin.H{
+					"message": msg,
+					"error":   "Invalid Password",
+				},
+			)
+			return
+		}
+
+		if retrieveUser.Email == nil {
+			log.Println("Oops account not found")
+			c.JSON(
+				http.StatusBadRequest,
+				gin.H{
+					"status":  http.StatusBadRequest,
+					"message": "Oops account not found",
+				},
+			)
+			return
+		}
+
+		token, refreshToken, _ := utils.GenerateAllTokens(
+			retrieveUser.User_id,
+			*retrieveUser.Email,
+		)
+
+		updatedUser, err := utils.UpdateTokens(token, refreshToken, user.User_id)
+
+		updatedUser.Email = retrieveUser.Email
+		updatedUser.User_id = retrieveUser.User_id
+
+		defer cancel()
+
+		if err != nil {
+			log.Println("Error updating tokens: ", err.Error())
+			c.JSON(
+				http.StatusInternalServerError,
+				gin.H{
+					"message": "Error occurred while updating tokens",
+					"error":   err.Error(),
+				},
+			)
+			return
+		}
+
+		log.Println("Tokens updated successfully! login successful")
+		c.JSON(
+			http.StatusOK,
+			gin.H{
+				"email":          retrieveUser.Email,
+				"userId":         retrieveUser.User_id,
+				"token":          retrieveUser.Token,
+				"refreshedToken": retrieveUser.Refresh_token,
+			},
+		)
+	}
+}
