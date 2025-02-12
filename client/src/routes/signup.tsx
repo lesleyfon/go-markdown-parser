@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { signupFn } from "../lib/authAPIFn";
 import { inputFieldData } from "../lib/constants";
 import { useMemo } from "react";
-import { AuthenticationStatus } from "../components/AuthenticationStatus";
+import { AuthenticationStatus } from "../components/authentication-status";
 
 export const Route = createFileRoute("/signup")({
 	component: Signup,

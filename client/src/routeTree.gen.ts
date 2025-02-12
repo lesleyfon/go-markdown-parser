@@ -16,6 +16,7 @@ import { Route as LoginImport } from './routes/login'
 import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
+
 const SignupRoute = SignupImport.update({
   id: '/signup',
   path: '/signup',
