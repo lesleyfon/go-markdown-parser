@@ -7,12 +7,19 @@ export const checkMarkdownSpellingErrorAPIFn = async ({ file }: { file: File }) 
   formdata.append(FILE_KEY, file, filename);
 
   const requestOptions = {
-    method: "POST",
-    body: formdata,
-    redirect: "follow" as RequestRedirect,
-  };
+		method: "POST",
+		body: formdata,
+		redirect: "follow" as RequestRedirect,
+  } as RequestInit;
+  
+	const token = localStorage.getItem("auth-token");
+	if (token) {
+		requestOptions.headers = {
+			Authorization: `Bearer ${token}`,
+		};
+	}
 
-  const response = await fetch("http://0.0.0.0:8080/api/v1/markdown", requestOptions);
+	const response = await fetch("http://0.0.0.0:8080/api/v1/markdown", requestOptions);
 
   if (!response.ok) {
     const errorResponse = await response.json();
