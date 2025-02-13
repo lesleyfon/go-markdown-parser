@@ -1,3 +1,11 @@
+
+export interface AuthResponse {
+	email: string;
+	refreshedToken: string;
+	token: string;
+	userId: string;
+}
+
 const myHeaders = new Headers();
 	myHeaders.append("Content-Type", "application/json");
 
@@ -8,7 +16,7 @@ const requestOptions = {
 	redirect: "follow" as RequestRedirect,
 };
 
-export async function loginFn({ email, password }: { email: string; password: string }) {
+export async function loginFn({ email, password }: { email: string; password: string }): Promise<AuthResponse> {
 	const body = JSON.stringify({
 		email,
 		password,
@@ -27,7 +35,7 @@ export async function loginFn({ email, password }: { email: string; password: st
 	return data;
 }
 
-export async function signupFn({ email, password }: { email: string; password: string }) {
+export async function signupFn({ email, password }: { email: string; password: string }): Promise<AuthResponse> {
 
 	const body = JSON.stringify({
 		email,
