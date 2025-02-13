@@ -32,7 +32,7 @@ func WrapMisspelledWordsInNode(n *html.Node, misspelled map[string][]string) {
 		// Replace any word that is a key in the misspelled map with a <span> tag.
 		newText := wordRegex.ReplaceAllStringFunc(text, func(word string) string {
 			if _, exists := misspelled[word]; exists {
-				return `<span class='misspelled-word' data-misspelled-word='` + word + `'>` + word + `</span>`
+				return `<span class='misspelled-word bg-red-300' data-misspelled-word='` + word + `'>` + word + `</span>`
 			}
 			return word
 		})
@@ -73,7 +73,17 @@ func ProcessHTML(htmlStr string, misspelled map[string][]string) (string, error)
 	htmlStr = charRegex.ReplaceAllString(htmlStr, "<br>")
 
 	// Add style to html head and style the misspelled word span
-	htmlStr = "<head><style>span.misspelled-word {text-decoration: underline; text-decoration-style: wavy; text-decoration-color: red;text-decoration-thickness: 1px;text-underline-offset: 3px;}</style></head>" + htmlStr
+	htmlStr = `
+	<head>
+	<script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+	<style>
+		span.misspelled-word {
+		text-decoration: underline; 
+		text-decoration-style: wavy; 
+		text-decoration-color: red;
+		text-decoration-thickness: 1px;text-underline-offset: 3px;
+		}</style>
+	</head>` + htmlStr
 	doc, err := html.Parse(strings.NewReader(htmlStr))
 	if err != nil {
 		log.Printf("Error parsing html: %v", err.Error())
