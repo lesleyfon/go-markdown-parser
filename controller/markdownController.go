@@ -2,18 +2,26 @@ package controller
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sajari/fuzzy"
 	"github.com/yuin/goldmark"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"main.go/database"
 	"main.go/utils"
 )
 
-// Add configuration struct
+var fileCollection *mongo.Collection = database.OpenCollection(database.Client, "file")
+
+// SpellCheckConfig contains configuration parameters for spell checking
 type SpellCheckConfig struct {
 	LevenshteinThreshold int
 	FuzzyModelDepth      int
@@ -57,6 +65,8 @@ func init() {
 
 func SpellCheckMarkdown() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
 
 		file, err := c.FormFile("markdownfile")
 		if err != nil {
@@ -119,6 +129,62 @@ func SpellCheckMarkdown() gin.HandlerFunc {
 					"message": "Markdown conversion failed: " + err.Error(),
 				})
 			return
+		}
+
+		//TODO: MOVE ALL THIS TO AFTER ALREADY MAKING THE SPELL CHECK
+		authToken := c.GetHeader("Authorization")
+
+		// If token exist, save the db
+		if authToken != "" {
+			bearerToken := strings.Split(authToken, " ")[1]
+			claims, _ := utils.ValidateToken(bearerToken)
+
+			// Change Uid to User_id
+			userId := claims.Uid
+			filename := file.Filename
+
+			fileFilter := bson.M{
+				"file_name": filename,
+				"user_id":   userId,
+			}
+
+			// Prepare the file document
+			now := time.Now()
+			fileDoc := bson.M{
+				"file_name":    filename,
+				"user_id":      userId,
+				"file_content": string(contents),
+				"updated_at":   now,
+			}
+
+			// Try to update existing file
+			result, err := fileCollection.UpdateOne(
+				ctx,
+				fileFilter,
+				bson.M{"$set": fileDoc},
+			)
+
+			if err != nil {
+				log.Printf("Error occurred while updating file: %v", err.Error())
+			} else {
+				log.Printf("File updated successfully")
+			}
+
+			// If no document was updated, create new one
+			if result.MatchedCount == 0 {
+				fileDoc["_id"] = primitive.NewObjectID()
+				fileDoc["created_at"] = now
+
+				_, err := fileCollection.InsertOne(ctx, fileDoc)
+				if err != nil {
+					log.Printf("Failed to create new file: %v", err.Error())
+					c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create file"})
+					return
+				}
+				log.Printf("New file created successfully")
+			} else {
+				log.Printf("File updated successfully")
+			}
 		}
 
 		// Get html contents
