@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { signupFn } from "../lib/authAPIFn";
@@ -10,6 +10,8 @@ export const Route = createFileRoute("/signup")({
 });
 
 export default function Signup() {
+	const navigate = useNavigate();
+
 	const form = useForm({
 		defaultValues: {
 			email: "",
@@ -21,8 +23,14 @@ export default function Signup() {
 
 	const mutation = useMutation({
 		mutationFn: signupFn,
-		onSuccess: () => {
+		onSuccess: (data) => {
 			queryClient.invalidateQueries({ queryKey: ["signup"] });
+
+			const token = data.token;
+			localStorage.setItem("auth-token", token);
+
+			// Navigate to home
+			navigate({ to: "/" });
 		},
 	});
 
