@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -18,11 +19,8 @@ import (
 var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
 
 type JwtSignedDetails struct {
-	Email     string
-	Name      string
-	Username  string
-	Uid       string
-	User_type string
+	Uid   string
+	Email string
 	jwt.StandardClaims
 }
 
@@ -41,11 +39,11 @@ func GenerateAllTokens(
 	// Create claims once and reuse
 	now := time.Now().Local()
 	standardClaims := jwt.StandardClaims{
-		ExpiresAt: now.Add(time.Hour * 12).Unix(),
+		ExpiresAt: now.Add(time.Hour * 24).Unix(),
 	}
 
 	refreshStandardClaims := jwt.StandardClaims{
-		ExpiresAt: now.Add(time.Hour * 100).Unix(),
+		ExpiresAt: now.Add(time.Hour * 168).Unix(),
 	}
 
 	// Create the claims for the token
@@ -57,6 +55,8 @@ func GenerateAllTokens(
 
 	// Create the claims for the refresh token
 	refreshClaims := &JwtSignedDetails{
+		Uid:            uid,
+		Email:          email,
 		StandardClaims: refreshStandardClaims,
 	}
 
@@ -84,7 +84,8 @@ func GenerateAllTokens(
 	}()
 
 	wg.Wait()
-
+	fmt.Println(tokenErr, token)
+	fmt.Println(refreshTokenErr, refreshToken)
 	// Check for errors
 	if tokenErr != nil {
 		return "", "", tokenErr
@@ -116,6 +117,7 @@ func UpdateTokens(signedToken string, signedRefreshedToken string, userId string
 		},
 	}
 
+	fmt.Println("Updating tokens for user: ", userId)
 	// Define filter based on the userId
 	filter := bson.M{"user_id": userId}
 	returnDocument := options.After
@@ -147,4 +149,26 @@ func UpdateTokens(signedToken string, signedRefreshedToken string, userId string
 	}
 
 	return &updatedUser, nil
+}
+
+func ValidateToken(signedToken string) (claims *JwtSignedDetails, msg string) {
+	token, err := jwt.ParseWithClaims(
+		signedToken,
+		&JwtSignedDetails{},
+		func(t *jwt.Token) (interface{}, error) {
+			return []byte(SECRET_KEY), nil
+		},
+	)
+	if err != nil {
+		msg = err.Error()
+		return nil, msg
+	}
+
+	claims, ok := token.Claims.(*JwtSignedDetails)
+
+	if !ok {
+		msg = "This token is incorrect. Sorry"
+	}
+
+	return claims, msg
 }
