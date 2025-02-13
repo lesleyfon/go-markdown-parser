@@ -57,17 +57,25 @@ func SignUpController() gin.HandlerFunc {
 			c.JSON(
 				http.StatusBadRequest,
 				gin.H{
-					"error": "error occurred while checking for this email",
-				})
+					"error":   "error occurred while checking for this email",
+					"status":  http.StatusBadRequest,
+					"message": "error occurred while checking for this email",
+				},
+			)
+			return
 		}
 
 		if emailCount > 0 {
 			log.Println("Email already exists. emailCount: ", emailCount)
 			c.JSON(
-				http.StatusBadRequest, gin.H{
-					"error": "Looks like this email already exists",
-					"count": emailCount,
-				})
+				http.StatusBadRequest,
+				gin.H{
+					"status":  http.StatusBadRequest,
+					"message": "Looks like this email already exists",
+					"error":   "Looks like this email already exists",
+					"count":   emailCount,
+				},
+			)
 			return
 		}
 
@@ -141,9 +149,9 @@ func SignUpController() gin.HandlerFunc {
 		if err != nil {
 			log.Println("Error inserting user: ", err.Error())
 			c.JSON(http.StatusBadRequest, gin.H{
-				"Status":  http.StatusBadRequest,
-				"Message": "error",
-				"data":    err.Error(),
+				"status":  http.StatusBadRequest,
+				"message": "Error inserting user",
+				"error":   err.Error(),
 			})
 			return
 		}
