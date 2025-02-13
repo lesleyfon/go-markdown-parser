@@ -19,7 +19,14 @@ You have to implement the following features:
 - [X] Add a simple home endpoint that response with a message `Welcome to Markdown parser`
 - [X] Create an endpoint that lets users upload a markdown file.
 - [X] Parse the markdown file and find spelling mistakes 
-- [ ] Stream response instead of returning all at once. For better UX
-- [ ] Add a simple UI to upload a markdown file and see the result.
+- [X] Add a simple UI to upload a markdown file and see the result.
 - [ ] Add a simple UI to list all the uploaded markdown files.
 - [ ] Add a simple UI to see the HTML version of the Markdown note.
+- [ ] For file saving
+  - [ ] Add file size limits
+  - [ ] Add content-type validation
+  - [ ] Add user quotas (max files per user)
+  - [ ] Add indexes on file_name and user_id fields in MongoDB
+  - [ ] Add file versioning if needed
+  - [ ] Add request timeout handling
+- [ ] Stream response instead of returning all at once. For better UX
