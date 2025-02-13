@@ -94,8 +94,8 @@ func SignUpController() gin.HandlerFunc {
 			return
 		}
 		created_at, _ := time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-
 		user.ID = primitive.NewObjectID()
+		user.User_id = user.ID.Hex()
 		user.Password = &password
 		user.Created_at = created_at
 		user.Updated_at = created_at
@@ -249,12 +249,24 @@ func LogIn() gin.HandlerFunc {
 			)
 			return
 		}
-		token, refreshToken, _ := utils.GenerateAllTokens(
+		token, refreshToken, err := utils.GenerateAllTokens(
 			retrieveUser.User_id,
 			*retrieveUser.Email,
 		)
 
-		updatedUser, err := utils.UpdateTokens(token, refreshToken, user.User_id)
+		if err != nil {
+			log.Println("Error generating tokens: ", err.Error())
+			c.JSON(
+				http.StatusInternalServerError,
+				gin.H{
+					"message": "Error occurred while generating tokens",
+					"error":   err.Error(),
+				},
+			)
+			return
+		}
+
+		updatedUser, err := utils.UpdateTokens(token, refreshToken, retrieveUser.User_id)
 
 		updatedUser.Email = retrieveUser.Email
 		updatedUser.User_id = retrieveUser.User_id
@@ -277,10 +289,10 @@ func LogIn() gin.HandlerFunc {
 		c.JSON(
 			http.StatusOK,
 			gin.H{
-				"email":          retrieveUser.Email,
-				"userId":         retrieveUser.User_id,
-				"token":          retrieveUser.Token,
-				"refreshedToken": retrieveUser.Refresh_token,
+				"email":          updatedUser.Email,
+				"userId":         updatedUser.User_id,
+				"token":          updatedUser.Token,
+				"refreshedToken": updatedUser.Refresh_token,
 			},
 		)
 	}
