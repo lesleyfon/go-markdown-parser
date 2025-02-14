@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useQuery } from "@tanstack/react-query";
 import { File, Loader2 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { API_BASE_URL } from "@/lib/constants";
 
 export interface File {
@@ -31,10 +31,19 @@ export interface FilesResponse {
 }
 
 export function AppSideBar() {
+	const token = localStorage?.getItem("auth-token") ?? "";
+	const location = useLocation();
+
 	const authQuery = useQuery({
 		queryKey: ["authenticate"],
 		queryFn: async () => {
-			const token = localStorage.getItem("auth-token");
+			if (!token) {
+				return {
+					message: "No token found, please login again",
+					status: 401,
+					isAuthenticated: false,
+				};
+			}
 			const res = await fetch(`${API_BASE_URL}/auth/v1/authenticate`, {
 				headers: {
 					Authorization: `Bearer ${token}`,
@@ -52,9 +61,11 @@ export function AppSideBar() {
 	});
 
 	const filesQuery = useQuery<FilesResponse>({
-		queryKey: ["all-files"],
+		queryKey: ["all-files", authQuery.data?.isAuthenticated],
 		queryFn: async () => {
-			const token = localStorage.getItem("auth-token");
+			if (!token) {
+				throw new Error("No token found, please login again");
+			}
 			const res = await fetch(`${API_BASE_URL}/api/v1/markdown/files`, {
 				headers: {
 					Authorization: `Bearer ${token}`,
@@ -110,7 +121,8 @@ export function AppSideBar() {
 	}
 
 	// DO not render sidebar if a user is not authenticated OR if they are on the login or signup page
-	if (!authQuery.data?.isAuthenticated) {
+	const pathname = location.pathname;
+	if (!authQuery.data?.isAuthenticated || pathname === "/login" || pathname === "/signup") {
 		return null;
 	}
 
