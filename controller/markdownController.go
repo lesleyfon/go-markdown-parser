@@ -247,3 +247,62 @@ func SpellCheckMarkdown() gin.HandlerFunc {
 
 	}
 }
+
+// GetAllFiles returns all files for a user
+// Only authenticated user can see their files
+func GetAllFiles() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		authToken := c.GetHeader("Authorization")
+		// If no token, return unauthorized
+		if authToken == "" {
+			log.Printf("Unauthorized. Please login to continue.")
+
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status":  http.StatusUnauthorized,
+				"message": "Unauthorized. Please login to continue.",
+			})
+			return
+		}
+
+		bearerToken := strings.Split(authToken, " ")[1]
+		claims, _ := utils.ValidateToken(bearerToken)
+
+		userId := claims.Uid
+
+		filter := bson.M{
+			"user_id": userId,
+		}
+
+		cursor, err := fileCollection.Find(ctx, filter)
+
+		if err != nil {
+			log.Printf("Error fetching files: %v", err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status":  http.StatusInternalServerError,
+				"message": "Internal server error",
+			})
+			return
+		}
+
+		var files []bson.M
+
+		if err = cursor.All(ctx, &files); err != nil {
+			log.Printf("Error fetching files: %v", err.Error())
+
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status":  http.StatusInternalServerError,
+				"message": "Internal server error",
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"status":  http.StatusOK,
+			"message": "Files fetched successfully",
+			"files":   files,
+		})
+	}
+}
