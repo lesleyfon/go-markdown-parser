@@ -9,8 +9,8 @@ The goal of this project is to help you learn how to handle file uploads in a RE
 ### Features
 
 You have to implement the following features:
-- You’ll provide an endpoint to check the grammar of the note.
-- You’ll also provide an endpoint to save the note that can be passed in as Markdown text.
+- You'll provide an endpoint to check the grammar of the note.
+- You'll also provide an endpoint to save the note that can be passed in as Markdown text.
 - Provide an endpoint to list the saved notes (i.e. uploaded markdown files).
 - Return the HTML version of the Markdown note (rendered note) through another endpoint.
 
