@@ -30,7 +30,7 @@ export default function Signup() {
 			localStorage.setItem("auth-token", token);
 
 			// Navigate to home
-			navigate({ to: "/" });
+			navigate({ to: "/", reloadDocument: true });
 		},
 	});
 

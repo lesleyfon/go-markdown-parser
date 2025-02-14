@@ -31,7 +31,7 @@ export default function Login() {
 			localStorage.setItem("auth-token", token);
 
 			// Navigate to home
-			navigate({ to: "/" });
+			navigate({ to: "/", reloadDocument: true });
 		},
 	});
 
