@@ -8,4 +8,6 @@ import (
 func MarkdownParserRoutes(router *gin.Engine) {
 	router.MaxMultipartMemory = 8 << 20 // 8Mib
 	router.POST("/api/v1/markdown", controller.SpellCheckMarkdown())
+	// Get all files names for a user
+	router.GET("/api/v1/markdown/files", controller.GetAllFiles())
 }
