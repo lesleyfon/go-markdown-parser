@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -295,5 +296,71 @@ func LogIn() gin.HandlerFunc {
 				"refreshedToken": updatedUser.Refresh_token,
 			},
 		)
+	}
+}
+
+func AuthenticateUser() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		authToken := c.GetHeader("Authorization")
+
+		if authToken == "" {
+			log.Printf("Unauthorized. Please login to continue.")
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status":  http.StatusUnauthorized,
+				"message": "Unauthorized. Please login to continue.",
+			})
+			return
+		}
+
+		bearerToken := strings.Split(authToken, " ")[1]
+		claims, _ := utils.ValidateToken(bearerToken)
+
+		if claims == nil {
+			log.Printf("Invalid token. Please login to continue.")
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status":  http.StatusUnauthorized,
+				"message": "Invalid token. Please login to continue.",
+			})
+			return
+		}
+		var user models.User
+
+		err := userCollection.FindOne(ctx, bson.M{
+			"user_id": claims.Uid,
+		}).Decode(&user)
+
+		if err != nil {
+			log.Printf("Error finding user: %v", err)
+			if err == mongo.ErrNoDocuments {
+				log.Printf("User not found. Please signup or login to continue.")
+				c.JSON(http.StatusNotFound, gin.H{
+					"status":  http.StatusNotFound,
+					"message": "User not found. Please signup or login to continue.",
+				})
+				return
+			}
+
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status":  http.StatusInternalServerError,
+				"message": "Error finding user",
+				"error":   err,
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"status":  http.StatusOK,
+			"message": "User authenticated successfully",
+			"user": bson.M{
+				"email":         user.Email,
+				"user_id":       user.User_id,
+				"token":         user.Token,
+				"refresh_token": user.Refresh_token,
+			},
+			"isAuthenticated": true,
+		})
 	}
 }
