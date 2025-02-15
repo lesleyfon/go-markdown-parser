@@ -141,52 +141,55 @@ func SpellCheckMarkdown() gin.HandlerFunc {
 			bearerToken := strings.Split(authToken, " ")[1]
 			claims, _ := utils.ValidateToken(bearerToken)
 
-			// Change Uid to User_id
-			userId := claims.Uid
-			filename := file.Filename
+			// If token is valid, save the db
+			if claims != nil {
+				// Change Uid to User_id
+				userId := claims.Uid
+				filename := file.Filename
 
-			fileFilter := bson.M{
-				"file_name": filename,
-				"user_id":   userId,
-			}
-
-			// Prepare the file document
-			now := time.Now()
-			fileDoc := bson.M{
-				"file_name":    filename,
-				"user_id":      userId,
-				"file_content": string(contents),
-				"updated_at":   now,
-			}
-
-			// Try to update existing file
-			result, err := fileCollection.UpdateOne(
-				ctx,
-				fileFilter,
-				bson.M{"$set": fileDoc},
-			)
-
-			if err != nil {
-				log.Printf("Error occurred while updating file: %v", err.Error())
-			} else {
-				log.Printf("File updated successfully")
-			}
-			// file_id 67ae5e09543a408ad6f428f2
-			// If no document was updated, create new one
-			if result.MatchedCount == 0 {
-				fileDoc["_id"] = primitive.NewObjectID()
-				fileDoc["file_id"] = fileDoc["_id"]
-				fileDoc["created_at"] = now
-
-				_, err := fileCollection.InsertOne(ctx, fileDoc)
-				if err != nil {
-					log.Printf("Failed to create new file: %v", err.Error())
-					c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create file"})
-					return
+				fileFilter := bson.M{
+					"file_name": filename,
+					"user_id":   userId,
 				}
-				log.Printf("New file created successfully")
-			} else {
-				log.Printf("File updated successfully")
+
+				// Prepare the file document
+				now := time.Now()
+				fileDoc := bson.M{
+					"file_name":    filename,
+					"user_id":      userId,
+					"file_content": string(contents),
+					"updated_at":   now,
+				}
+
+				// Try to update existing file
+				result, err := fileCollection.UpdateOne(
+					ctx,
+					fileFilter,
+					bson.M{"$set": fileDoc},
+				)
+
+				if err != nil {
+					log.Printf("Error occurred while updating file: %v", err.Error())
+				} else {
+					log.Printf("File updated successfully")
+				}
+				// file_id 67ae5e09543a408ad6f428f2
+				// If no document was updated, create new one
+				if result.MatchedCount == 0 {
+					fileDoc["_id"] = primitive.NewObjectID()
+					fileDoc["file_id"] = fileDoc["_id"]
+					fileDoc["created_at"] = now
+
+					_, err := fileCollection.InsertOne(ctx, fileDoc)
+					if err != nil {
+						log.Printf("Failed to create new file: %v", err.Error())
+						c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create file"})
+						return
+					}
+					log.Printf("New file created successfully")
+				} else {
+					log.Printf("File updated successfully")
+				}
 			}
 		}
 
@@ -271,8 +274,16 @@ func GetAllFiles() gin.HandlerFunc {
 		}
 
 		bearerToken := strings.Split(authToken, " ")[1]
-		claims, _ := utils.ValidateToken(bearerToken)
+		claims, msg := utils.ValidateToken(bearerToken)
 
+		if claims == nil {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status":  http.StatusUnauthorized,
+				"message": "Invalid token. Please login to continue",
+				"error":   msg,
+			})
+			return
+		}
 		userId := claims.Uid
 
 		filter := bson.M{
@@ -328,7 +339,16 @@ func GetFileById() gin.HandlerFunc {
 		}
 
 		bearerToken := strings.Split(authToken, " ")[1]
-		claims, _ := utils.ValidateToken(bearerToken)
+		claims, msg := utils.ValidateToken(bearerToken)
+
+		if claims == nil {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status":  http.StatusUnauthorized,
+				"message": "Invalid token. Please login to continue",
+				"error":   msg,
+			})
+			return
+		}
 
 		fileId := c.Param("file_id")
 		userId := claims.Uid
