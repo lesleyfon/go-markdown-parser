@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"bytes"
 	"context"
 	"encoding/base64"
 	"io"
@@ -12,7 +11,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sajari/fuzzy"
-	"github.com/yuin/goldmark"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -120,19 +118,6 @@ func SpellCheckMarkdown() gin.HandlerFunc {
 			return
 		}
 
-		var buff bytes.Buffer
-
-		// Convert markdown to html
-		if err := goldmark.Convert(contents, &buff); err != nil {
-			log.Printf("Markdown conversion failed: %v", err.Error())
-			c.JSON(
-				http.StatusInternalServerError,
-				gin.H{
-					"message": "Markdown conversion failed: " + err.Error(),
-				})
-			return
-		}
-
 		//TODO: MOVE ALL THIS TO AFTER ALREADY MAKING THE SPELL CHECK
 		authToken := c.GetHeader("Authorization")
 
@@ -193,49 +178,8 @@ func SpellCheckMarkdown() gin.HandlerFunc {
 			}
 		}
 
-		// Get html contents
-		htmlContents := buff.String()
-
-		// Strip HTML tags and convert to plain text
-		plainText := utils.StripHTML(htmlContents)
-
-		// Tokenize text
-		tokenizer := utils.NewTokenizer()
-
-		// Tokenize text
-		parsedText := tokenizer.Tokenize(plainText)
-
-		// Make a map of misspelled words
-		misspelledWords := make(map[string][]string)
-
-		// Check each word in the parsed text
-		for _, wordToCheck := range parsedText {
-			wordLower := strings.ToLower(wordToCheck)
-
-			// Only check words that don't exist in the dictionary
-			_, ok := dictionaryMap[wordLower]
-			if !ok {
-				// Get suggestions
-				suggestions := fuzzyModel.Suggestions(wordToCheck, false)
-
-				// Filter suggestions to only include close matches
-				var filteredSuggestions []string
-				for _, suggestion := range suggestions {
-					// Calculate Levenshtein distance
-					if utils.LevenshteinDistance(wordLower, strings.ToLower(suggestion)) <= 2 {
-						filteredSuggestions = append(filteredSuggestions, suggestion)
-					}
-				}
-
-				// If there are suggestions, add them to the misspelled words map
-				if len(filteredSuggestions) > 0 {
-					misspelledWords[wordToCheck] = filteredSuggestions
-				}
-			}
-		}
-
 		// Process HTML and wrap misspelled words
-		modifiedHTML, err := utils.ProcessHTML(htmlContents, misspelledWords)
+		modifiedHTML, err := utils.ProcessMarkdownWithSpellCheck(contents, dictionaryMap, fuzzyModel)
 		if err != nil {
 			// LOG Error
 			log.Printf("HTML processing failed: %v", err.Error())
@@ -244,9 +188,6 @@ func SpellCheckMarkdown() gin.HandlerFunc {
 			})
 			return
 		}
-
-		// LOG Success
-		log.Printf("Spell check completed successfully. %d words checked, %d misspelled words found.", len(parsedText), len(misspelledWords))
 
 		// Respond with the modified HTML
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(modifiedHTML))
@@ -389,62 +330,8 @@ func GetFileById() gin.HandlerFunc {
 		responseData["created_at"] = file.Created_at
 		responseData["updated_at"] = file.Updated_at
 
-		var buff bytes.Buffer
-
-		// Convert markdown to html
-		if err := goldmark.Convert(markdownFileContents, &buff); err != nil {
-			log.Printf("Markdown conversion failed: %v", err.Error())
-			c.JSON(
-				http.StatusInternalServerError,
-				gin.H{
-					"message": "Markdown conversion failed: " + err.Error(),
-				})
-			return
-		}
-
-		// Get html contents
-		htmlContents := buff.String()
-
-		// Strip HTML tags and convert to plain text
-		plainText := utils.StripHTML(htmlContents)
-
-		// Tokenize text
-		tokenizer := utils.NewTokenizer()
-
-		// Tokenize text
-		parsedText := tokenizer.Tokenize(plainText)
-
-		// Make a map of misspelled words
-		misspelledWords := make(map[string][]string)
-
-		// Check each word in the parsed text
-		for _, wordToCheck := range parsedText {
-			wordLower := strings.ToLower(wordToCheck)
-
-			// Only check words that don't exist in the dictionary
-			_, ok := dictionaryMap[wordLower]
-			if !ok {
-				// Get suggestions
-				suggestions := fuzzyModel.Suggestions(wordToCheck, false)
-
-				// Filter suggestions to only include close matches
-				var filteredSuggestions []string
-				for _, suggestion := range suggestions {
-					// Calculate Levenshtein distance
-					if utils.LevenshteinDistance(wordLower, strings.ToLower(suggestion)) <= 2 {
-						filteredSuggestions = append(filteredSuggestions, suggestion)
-					}
-				}
-
-				// If there are suggestions, add them to the misspelled words map
-				if len(filteredSuggestions) > 0 {
-					misspelledWords[wordToCheck] = filteredSuggestions
-				}
-			}
-		}
-
 		// Process HTML and wrap misspelled words
-		modifiedHTML, err := utils.ProcessHTML(htmlContents, misspelledWords)
+		modifiedHTML, err := utils.ProcessMarkdownWithSpellCheck(markdownFileContents, dictionaryMap, fuzzyModel)
 		if err != nil {
 			// LOG Error
 			log.Printf("HTML processing failed: %v", err.Error())
@@ -453,9 +340,6 @@ func GetFileById() gin.HandlerFunc {
 			})
 			return
 		}
-
-		// LOG Success
-		log.Printf("Spell check completed successfully. %d words checked, %d misspelled words found.", len(parsedText), len(misspelledWords))
 
 		// convert modifiedHTML to base64
 		htmlBase64 := base64.StdEncoding.EncodeToString([]byte(modifiedHTML))
