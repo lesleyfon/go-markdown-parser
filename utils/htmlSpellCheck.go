@@ -32,7 +32,12 @@ func WrapMisspelledWordsInNode(n *html.Node, misspelled map[string][]string) {
 		// Replace any word that is a key in the misspelled map with a <span> tag.
 		newText := wordRegex.ReplaceAllStringFunc(text, func(word string) string {
 			if _, exists := misspelled[word]; exists {
-				return `<span class='misspelled-word bg-red-300' data-misspelled-word='` + word + `'>` + word + `</span>`
+				validUnorderedListMarkup := `<ul>`
+				for _, correctWord := range misspelled[word] {
+					validUnorderedListMarkup += `<li class='list-disc' >` + correctWord + `</li>`
+				}
+				validUnorderedListMarkup += `</ul>`
+				return `<div class='tooltip'><span class='misspelled-word bg-red-300' data-misspelled-word='` + word + `'>` + word + `</span><div class='tooltip-text'>` + validUnorderedListMarkup + `</div></div>`
 			}
 			return word
 		})
@@ -82,7 +87,33 @@ func ProcessHTML(htmlStr string, misspelled map[string][]string) (string, error)
 		text-decoration-style: wavy; 
 		text-decoration-color: red;
 		text-decoration-thickness: 1px;text-underline-offset: 3px;
-		}</style>
+		}
+		.tooltip {
+			position: relative;
+			display: inline-block;
+			border-bottom: 1px dotted black;
+		}
+
+		.tooltip .tooltip-text {
+			display: none;
+			width: 120px;
+			background-color: black;
+			color: #fff;
+			text-align: center;
+			border-radius: 6px;
+			padding: 5px 0;
+
+			/* Position the tooltip */
+			position: absolute;
+			z-index: 1;
+			/* bottom: -30px; */
+			left: -15px;
+		}
+
+		.tooltip:hover .tooltip-text {
+			display: block;
+		}
+		</style>
 	</head>` + htmlStr
 	doc, err := html.Parse(strings.NewReader(htmlStr))
 	if err != nil {
