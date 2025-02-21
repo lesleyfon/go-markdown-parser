@@ -5,7 +5,7 @@ import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { documentValidator } from "@/lib/formValidations";
-import { checkMarkdownSpellingErrorAPIFn, FILE_KEY } from "@/lib/checkMarkdownSpellingErrorAPIFn";
+import { checkMarkdownSpellingErrorAPIFn, FILE_KEY } from "@/apis/checkMarkdownSpellingErrorAPIFn";
 
 export const Route = createFileRoute("/")({
 	component: Index,

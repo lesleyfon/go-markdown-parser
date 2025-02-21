@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { loginFn } from "../lib/authAPIFn";
-import { AuthenticationStatus } from "../components/authentication-status";
+import { loginFn } from "@/apis/authAPIFn";
+import { AuthenticationStatus } from "@/components/authentication-status";
 import AuthFormFieldGroup from "@/components/auth-form-field-group";
 
 export const Route = createFileRoute("/login")({
