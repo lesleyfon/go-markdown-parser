@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/sajari/fuzzy"
@@ -22,18 +23,13 @@ import (
 //   - map[string][]string: A map of misspelled words and their suggestions
 //   - error: Any error encountered during processing
 
-func findMisspelledWords(text string, dictionary map[string]bool, model *fuzzy.Model) (map[string][]string, error) {
-	// Tokenize text
-	tokenizer := NewTokenizer()
-
-	// Tokenize text
-	parsedText := tokenizer.Tokenize(text)
+func findMisspelledWords(tokens []string, dictionary map[string]bool, model *fuzzy.Model) (map[string][]string, error) {
 
 	// Make a map of misspelled words.
 	misspelledWords := make(map[string][]string)
 
 	// Check each word in the parsed text
-	for _, wordToCheck := range parsedText {
+	for _, wordToCheck := range tokens {
 		wordLower := strings.ToLower(wordToCheck)
 
 		// Only check words that don't exist in the dictionary
@@ -115,8 +111,15 @@ func ProcessMarkdownWithSpellCheck(contents []byte, dictionaryMap map[string]boo
 	// Strip HTML tags and convert to plain text
 	plainText := StripHTML(htmlContents)
 
+	// // Tokenize text
+	tokenizer := NewTokenizer()
+
+	// // Tokenize text
+	tokens := tokenizer.Tokenize(plainText)
+
+	// misspelledWords, _ := findMisspelledWords(tokens, dictionaryMap, fuzzyModel)
 	// Make a map of misspelled words
-	misspelledWords, err := findMisspelledWords(plainText, dictionaryMap, fuzzyModel)
+	misspelledWords := findMisspelledWordsParallel(tokens, dictionaryMap, fuzzyModel)
 
 	if err != nil {
 		return "", fmt.Errorf("spell check failed: %w", err)
@@ -134,4 +137,65 @@ func ProcessMarkdownWithSpellCheck(contents []byte, dictionaryMap map[string]boo
 	// LOG Success
 	log.Printf("Spell check completed successfully.  %d misspelled words found.", len(misspelledWords))
 	return modifiedHTML, nil
+}
+
+// chunkSlice splits a slice into smaller chunks of the specified size
+func chunkSlice(slice []string, chunkSize int) [][]string {
+	var chunks [][]string
+	for i := 0; i < len(slice); i += chunkSize {
+		end := i + chunkSize
+		if end > len(slice) {
+			end = len(slice)
+		}
+		chunks = append(chunks, slice[i:end])
+	}
+	return chunks
+}
+
+// findMisspelledWordsParallel finds misspelled words in a text using fuzzy matching in parallel
+//
+// Parameters:
+//   - words: A slice of words to check for misspelled words
+//   - dictionary: A map of words to check against
+//   - model: A fuzzy matching model
+//
+// Returns:
+//   - map[string][]string: A map of misspelled words and their suggestions
+func findMisspelledWordsParallel(words []string, dictionary map[string]bool, model *fuzzy.Model) map[string][]string {
+	misspelledWords := make(map[string][]string)
+	var mutex sync.Mutex
+	var wg sync.WaitGroup
+
+	// Process words in chunks (e.g., 1000 words per goroutine)
+	chunks := chunkSlice(words, 1000)
+
+	for _, chunk := range chunks {
+		wg.Add(1)
+		// Use a closure to capture the current chunk
+		go func(words []string) {
+			// Defer the done call to ensure it runs when the function returns
+			defer wg.Done()
+			localMisspelled := make(map[string][]string)
+
+			for _, word := range words {
+				wordLower := strings.ToLower(word)
+				if !dictionary[wordLower] {
+					suggestions := model.Suggestions(word, false)
+					if len(suggestions) > 0 {
+						localMisspelled[word] = suggestions
+					}
+				}
+			}
+
+			// Lock once per chunk instead of per word
+			mutex.Lock()
+			for word, suggestions := range localMisspelled {
+				misspelledWords[word] = suggestions
+			}
+			mutex.Unlock()
+		}(chunk)
+	}
+
+	wg.Wait()
+	return misspelledWords
 }
