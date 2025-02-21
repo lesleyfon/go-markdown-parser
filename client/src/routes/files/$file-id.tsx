@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "@/lib/constants";
+import { fetchFile } from "@/apis/fetchFile";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
@@ -30,30 +30,9 @@ function FileDetails() {
 
 	const { data, isLoading, isError, error } = useQuery({
 		queryKey: ["file-by-id", fileId],
-		queryFn: async (): Promise<FileResponse> => {
-			const token = localStorage.getItem("auth-token");
-			if (!token) {
-				return {
-					message: "No token found, please login again",
-					status: 401,
-				};
-			}
-
-			const res = await fetch(`${API_BASE_URL}/api/v1/markdown/files/${fileId}`, {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			});
-
-			if (!res.ok) {
-				const error = await res.json();
-				throw new Error(error.message);
-			}
-
-			const data = await res.json();
-			return data;
-		},
+		queryFn: () => fetchFile(fileId),
 		enabled: !!fileId,
+		retry: false,
 	});
 
 	if (isLoading) {
