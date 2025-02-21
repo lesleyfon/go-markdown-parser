@@ -117,6 +117,7 @@ func SpellCheckMarkdown() gin.HandlerFunc {
 				})
 			return
 		}
+		filename := file.Filename
 
 		//TODO: MOVE ALL THIS TO AFTER ALREADY MAKING THE SPELL CHECK
 		authToken := c.GetHeader("Authorization")
@@ -128,52 +129,12 @@ func SpellCheckMarkdown() gin.HandlerFunc {
 
 			// If token is valid, save the db
 			if claims != nil {
-				// Change Uid to User_id
-				userId := claims.Uid
-				filename := file.Filename
-
-				fileFilter := bson.M{
-					"file_name": filename,
-					"user_id":   userId,
-				}
-
-				// Prepare the file document
-				now := time.Now()
-				fileDoc := bson.M{
-					"file_name":    filename,
-					"user_id":      userId,
-					"file_content": string(contents),
-					"updated_at":   now,
-				}
-
-				// Try to update existing file
-				result, err := fileCollection.UpdateOne(
-					ctx,
-					fileFilter,
-					bson.M{"$set": fileDoc},
-				)
-
-				if err != nil {
-					log.Printf("Error occurred while updating file: %v", err.Error())
-				} else {
-					log.Printf("File updated successfully")
-				}
-				// file_id 67ae5e09543a408ad6f428f2
-				// If no document was updated, create new one
-				if result.MatchedCount == 0 {
-					fileDoc["_id"] = primitive.NewObjectID()
-					fileDoc["file_id"] = fileDoc["_id"]
-					fileDoc["created_at"] = now
-
-					_, err := fileCollection.InsertOne(ctx, fileDoc)
-					if err != nil {
-						log.Printf("Failed to create new file: %v", err.Error())
-						c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create file"})
-						return
-					}
-					log.Printf("New file created successfully")
-				} else {
-					log.Printf("File updated successfully")
+				if err := SaveMarkdownFile(ctx, filename, contents, claims.Uid); err != nil {
+					log.Printf("Error saving file: %v", err.Error())
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"message": "Error saving file: " + err.Error(),
+					})
+					return
 				}
 			}
 		}
@@ -351,4 +312,53 @@ func GetFileById() gin.HandlerFunc {
 			"file":    responseData,
 		})
 	}
+}
+
+// SaveMarkdownFile saves or updates a markdown file in the database
+func SaveMarkdownFile(ctx context.Context, filename string, contents []byte, userId string) error {
+	fileFilter := bson.M{
+		"file_name": filename,
+		"user_id":   userId,
+	}
+
+	// Prepare the file document
+	now := time.Now()
+	fileDoc := bson.M{
+		"file_name":    filename,
+		"user_id":      userId,
+		"file_content": string(contents),
+		"updated_at":   now,
+	}
+
+	// Update the file
+	result, err := fileCollection.UpdateOne(
+		ctx,
+		fileFilter,
+		bson.M{"$set": fileDoc},
+	)
+
+	if err != nil {
+		log.Printf("Error occurred while updating file: %v", err.Error())
+		return err
+	}
+
+	// If no document was updated, create new one
+	if result.MatchedCount == 0 {
+		docId := primitive.NewObjectID()
+		fileDoc["_id"] = docId
+		fileDoc["file_id"] = docId.Hex()
+		fileDoc["created_at"] = now
+
+		_, err := fileCollection.InsertOne(ctx, fileDoc)
+		// If error, return error
+		if err != nil {
+			log.Printf("Failed to create new file: %v", err.Error())
+			return err
+		}
+		log.Printf("New file created successfully")
+	} else {
+		log.Printf("File updated successfully")
+	}
+
+	return nil
 }
