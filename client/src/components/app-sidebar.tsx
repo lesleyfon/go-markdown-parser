@@ -34,6 +34,7 @@ export function AppSideBar() {
 	const token = localStorage?.getItem("auth-token") ?? "";
 	const location = useLocation();
 
+	//TODO: Move the Functions into api directory
 	const authQuery = useQuery({
 		queryKey: ["authenticate"],
 		queryFn: async () => {
@@ -81,6 +82,7 @@ export function AppSideBar() {
 			return data;
 		},
 		enabled: authQuery.data?.isAuthenticated,
+		retry: false,
 	});
 
 	const sideBarMenuItems = useMemo(
@@ -102,6 +104,15 @@ export function AppSideBar() {
 		),
 		[filesQuery.data?.files]
 	);
+	// DO not render sidebar if a user is not authenticated OR if they are on the login or signup page
+	const pathname = location.pathname;
+	const sidebarPathBlacklist = ["/", "/login", "/signup"];
+	if (
+		sidebarPathBlacklist.includes(pathname) &&
+		(authQuery?.isLoading || !authQuery.data?.isAuthenticated)
+	) {
+		return;
+	}
 
 	// Add loading states
 	if (authQuery.isLoading) {
@@ -118,12 +129,6 @@ export function AppSideBar() {
 				Error: {authQuery.error?.message || filesQuery.error?.message}
 			</div>
 		);
-	}
-
-	// DO not render sidebar if a user is not authenticated OR if they are on the login or signup page
-	const pathname = location.pathname;
-	if (!authQuery.data?.isAuthenticated || pathname === "/login" || pathname === "/signup") {
-		return null;
 	}
 
 	return (
