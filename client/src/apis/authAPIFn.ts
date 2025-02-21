@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "@/lib/constants";
 
 export interface AuthResponse {
 	email: string;
@@ -23,7 +24,7 @@ export async function loginFn({ email, password }: { email: string; password: st
 	});
 
 
-	const response = await fetch("http://0.0.0.0:8080/auth/v1/login"	, {...requestOptions, body});
+	const response = await fetch(`${API_BASE_URL}/auth/v1/login`	, {...requestOptions, body});
 
 	if (!response.ok) {
 		const error = await response.json();
@@ -42,7 +43,7 @@ export async function signupFn({ email, password }: { email: string; password: s
 		password,
 	});
 
-	const response = await fetch("http://0.0.0.0:8080/auth/v1/signup", {
+	const response = await fetch(`${API_BASE_URL}/auth/v1/signup`, {
 		...requestOptions,
 		body,
 	});
@@ -53,6 +54,37 @@ export async function signupFn({ email, password }: { email: string; password: s
 	}
 
 	const data = await response.json();
+
+	return data;
+}
+
+
+ interface UnAuthenticateUserResponse {
+	message: string;
+	status: number;
+	isAuthenticated: boolean;
+}
+
+export async function authenticateUserFn(): Promise<AuthResponse | UnAuthenticateUserResponse> {
+	const token = localStorage.getItem("auth-token");
+	if (!token) {
+		return {
+			message: "No token found, please login again",
+			status: 401,
+			isAuthenticated: false,
+		};
+	}
+	const res = await fetch(`${API_BASE_URL}/auth/v1/authenticate`, {
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+	});
+
+	if (!res.ok) {
+		const error = await res.json();
+		throw new Error(error.message);
+	}
+	const data = await res.json();
 
 	return data;
 }
