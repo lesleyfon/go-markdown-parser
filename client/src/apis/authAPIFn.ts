@@ -1,11 +1,5 @@
 import { API_BASE_URL } from "@/lib/constants";
-
-export interface AuthResponse {
-	email: string;
-	refreshedToken: string;
-	token: string;
-	userId: string;
-}
+import { AuthResponse, UnAuthenticateUserResponse } from "@/types";
 
 const myHeaders = new Headers();
 	myHeaders.append("Content-Type", "application/json");
@@ -59,11 +53,6 @@ export async function signupFn({ email, password }: { email: string; password: s
 }
 
 
- interface UnAuthenticateUserResponse {
-	message: string;
-	status: number;
-	isAuthenticated: boolean;
-}
 
 export async function authenticateUserFn(): Promise<AuthResponse | UnAuthenticateUserResponse> {
 	const token = localStorage.getItem("auth-token");

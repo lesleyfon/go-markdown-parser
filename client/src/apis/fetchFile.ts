@@ -24,3 +24,23 @@ export async function fetchFile(fileId: string): Promise<FileResponse> {
 	const data = await res.json();
 	return data;
 }
+
+
+export async function fetchAllFiles(){
+	const token = localStorage.getItem("auth-token");
+			if (!token) {
+				throw new Error("No token found, please login again");
+			}
+			const res = await fetch(`${API_BASE_URL}/api/v1/markdown/files`, {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
+
+			if (!res.ok) {
+				const error = await res.json();
+				throw new Error(error.message);
+			}
+			const data = await res.json();
+			return data;
+}
