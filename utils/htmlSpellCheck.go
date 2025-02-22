@@ -113,6 +113,15 @@ func ProcessHTML(htmlStr string, misspelled map[string][]string) (string, error)
 		.tooltip:hover .tooltip-text {
 			display: block;
 		}
+
+		pre code {
+		  background-color: #f0f0f0;
+  		font-family: "Courier New", Courier, monospace;
+  		padding: 10px;
+  		border: 1px solid #ddd;
+  		display: block;
+  		white-space: pre;
+		}
 		</style>
 	</head>` + htmlStr
 	doc, err := html.Parse(strings.NewReader(htmlStr))
