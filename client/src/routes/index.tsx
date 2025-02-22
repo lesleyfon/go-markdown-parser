@@ -83,7 +83,7 @@ function Index() {
 				</section>
 
 				{srcDoc.length > 0 && !mutation.isPending ? (
-					<section className="w-full border rounded-lg overflow-hidden p-4">
+					<section className="w-full border rounded-xs overflow-hidden p-4">
 						<iframe
 							title="Spell Check Results"
 							srcDoc={srcDoc}
