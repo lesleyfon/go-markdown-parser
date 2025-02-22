@@ -52,8 +52,8 @@ function FileDetails() {
 	}
 
 	return (
-		<div>
-			<h1 className="text-2xl font-bold mb-4">
+		<div className="flex flex-col gap-2 items-center justify-center ml-8">
+			<h1 className="text-2xl font-bold mb-4 text-left w-full">
 				{data?.file?.file_name ? `File Details: ${data?.file?.file_name}` : data?.message}
 			</h1>
 			{data?.file?.html_content ? (

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useForm } from "@tanstack/react-form";
+import { FieldApi, useForm } from "@tanstack/react-form";
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
@@ -10,6 +10,16 @@ import { checkMarkdownSpellingErrorAPIFn, FILE_KEY } from "@/apis/checkMarkdownS
 export const Route = createFileRoute("/")({
 	component: Index,
 });
+
+type ChangeInputParamType = FieldApi<
+	{
+		markdownfile: File | undefined;
+	},
+	"markdownfile",
+	undefined,
+	undefined,
+	File
+>;
 
 function Index() {
 	const [srcDoc, setSrcDoc] = useState<string>("");
@@ -23,6 +33,32 @@ function Index() {
 		onSuccess: (data) => setSrcDoc(data),
 	});
 
+	const validators = {
+		onChange: documentValidator,
+		onSubmit: documentValidator,
+	};
+
+	function handleFileInputChange(
+		field: ChangeInputParamType,
+		e: React.ChangeEvent<HTMLInputElement>
+	) {
+		const file = e?.target?.files?.[0];
+		if (file) {
+			field.handleChange(file);
+		}
+	}
+
+	function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
+		e.preventDefault();
+		e.stopPropagation();
+		const file = form.getFieldValue(FILE_KEY);
+
+		if (!form.state.canSubmit) return;
+
+		if (file) {
+			mutation.mutate({ file });
+		}
+	}
 	return (
 		<div className="container mx-auto p-6">
 			<h1 className="text-2xl font-bold mb-4">Markdown Spell Checker</h1>
@@ -35,24 +71,11 @@ function Index() {
 				<section className="w-full">
 					<form
 						className="flex flex-col sm:flex-row gap-4 items-start"
-						onSubmit={(e) => {
-							e.preventDefault();
-							e.stopPropagation();
-							const file = form.getFieldValue(FILE_KEY);
-
-							if (!form.state.canSubmit) return;
-
-							if (file) {
-								mutation.mutate({ file });
-							}
-						}}
+						onSubmit={handleFormSubmit}
 					>
 						<form.Field
 							name={FILE_KEY}
-							validators={{
-								onChange: documentValidator,
-								onSubmit: documentValidator,
-							}}
+							validators={validators}
 							children={(field) => (
 								<div>
 									<Input
@@ -62,12 +85,7 @@ function Index() {
 										accept=".md"
 										placeholder=""
 										onBlur={field.handleBlur}
-										onChange={(e) => {
-											const file = e?.target?.files?.[0];
-											if (file) {
-												field.handleChange(file);
-											}
-										}}
+										onChange={(e) => handleFileInputChange(field, e)}
 									/>
 									<em role="alert" className="text-red-300 text-sm mt-1 block">
 										{field.state.meta.errors.join(", ")}
@@ -83,7 +101,7 @@ function Index() {
 				</section>
 
 				{srcDoc.length > 0 && !mutation.isPending ? (
-					<section className="w-full border rounded-xs overflow-hidden p-4">
+					<section className="w-full border rounded-xs overflow-hidden ml-4">
 						<iframe
 							title="Spell Check Results"
 							srcDoc={srcDoc}
