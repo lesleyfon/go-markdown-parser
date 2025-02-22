@@ -10,78 +10,30 @@ import {
 	SidebarProvider,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useQuery } from "@tanstack/react-query";
 import { File, Loader2 } from "lucide-react";
+
+import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
-import { API_BASE_URL } from "@/lib/constants";
-
-export interface File {
-	_id: string;
-	created_at: string;
-	file_content: string;
-	file_name: string;
-	updated_at: string;
-	user_id: string;
-}
-
-export interface FilesResponse {
-	files: File[];
-	message: string;
-	status: number;
-}
+import { AuthResponse, FilesResponse, UnAuthenticateUserResponse } from "@/types";
+import { authenticateUserFn } from "@/apis/authAPIFn";
+import { fetchAllFiles } from "@/apis/fetchFile";
 
 export function AppSideBar() {
-	const token = localStorage?.getItem("auth-token") ?? "";
 	const location = useLocation();
 
-	//TODO: Move the Functions into api directory
-	const authQuery = useQuery({
+	const {
+		data: authQueryData,
+		isLoading: authQueryIsLoading,
+		error: authQueryError,
+	} = useQuery<AuthResponse | UnAuthenticateUserResponse>({
 		queryKey: ["authenticate"],
-		queryFn: async () => {
-			if (!token) {
-				return {
-					message: "No token found, please login again",
-					status: 401,
-					isAuthenticated: false,
-				};
-			}
-			const res = await fetch(`${API_BASE_URL}/auth/v1/authenticate`, {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			});
-
-			if (!res.ok) {
-				const error = await res.json();
-				throw new Error(error.message);
-			}
-			const data = await res.json();
-
-			return data;
-		},
+		queryFn: authenticateUserFn,
 	});
 
 	const filesQuery = useQuery<FilesResponse>({
-		queryKey: ["all-files", authQuery.data?.isAuthenticated],
-		queryFn: async () => {
-			if (!token) {
-				throw new Error("No token found, please login again");
-			}
-			const res = await fetch(`${API_BASE_URL}/api/v1/markdown/files`, {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			});
-
-			if (!res.ok) {
-				const error = await res.json();
-				throw new Error(error.message);
-			}
-			const data = await res.json();
-
-			return data;
-		},
-		enabled: authQuery.data?.isAuthenticated,
+		queryKey: ["all-files", authQueryData?.isAuthenticated],
+		queryFn: fetchAllFiles,
+		enabled: authQueryData?.isAuthenticated,
 		retry: false,
 	});
 
@@ -109,13 +61,13 @@ export function AppSideBar() {
 	const sidebarPathBlacklist = ["/", "/login", "/signup"];
 	if (
 		sidebarPathBlacklist.includes(pathname) &&
-		(authQuery?.isLoading || !authQuery.data?.isAuthenticated)
+		(authQueryIsLoading || !authQueryData?.isAuthenticated)
 	) {
 		return;
 	}
 
 	// Add loading states
-	if (authQuery.isLoading) {
+	if (authQueryIsLoading) {
 		return (
 			<div className="flex items-center justify-center h-full">
 				<Loader2 className="animate-spin" />
@@ -123,10 +75,10 @@ export function AppSideBar() {
 		);
 	}
 
-	if (authQuery.error || filesQuery.error) {
+	if (authQueryError || filesQuery.error) {
 		return (
 			<div className="p-4 text-red-500">
-				Error: {authQuery.error?.message || filesQuery.error?.message}
+				Error: {authQueryError?.message || filesQuery.error?.message}
 			</div>
 		);
 	}

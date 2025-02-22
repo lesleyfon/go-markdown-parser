@@ -20,9 +20,7 @@ function Index() {
 
 	const mutation = useMutation({
 		mutationFn: checkMarkdownSpellingErrorAPIFn,
-		onSuccess: (data) => {
-			setSrcDoc(data);
-		},
+		onSuccess: (data) => setSrcDoc(data),
 	});
 
 	return (
