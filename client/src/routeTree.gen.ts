@@ -14,11 +14,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as SignupImport } from './routes/signup'
 import { Route as LoginImport } from './routes/login'
 import { Route as IndexImport } from './routes/index'
-import { Route as DistIndexImport } from './routes/dist/index'
 import { Route as FilesFileIdImport } from './routes/files/$file-id'
-import { Route as DistSignupImport } from './routes/dist/signup'
-import { Route as DistLoginImport } from './routes/dist/login'
-import { Route as FilesDistFileIdImport } from './routes/files/dist/$file-id'
 
 // Create/Update Routes
 
@@ -40,33 +36,9 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const DistIndexRoute = DistIndexImport.update({
-  id: '/dist/',
-  path: '/dist/',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const FilesFileIdRoute = FilesFileIdImport.update({
   id: '/files/$file-id',
   path: '/files/$file-id',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const DistSignupRoute = DistSignupImport.update({
-  id: '/dist/signup',
-  path: '/dist/signup',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const DistLoginRoute = DistLoginImport.update({
-  id: '/dist/login',
-  path: '/dist/login',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const FilesDistFileIdRoute = FilesDistFileIdImport.update({
-  id: '/files/dist/$file-id',
-  path: '/files/dist/$file-id',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -95,39 +67,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupImport
       parentRoute: typeof rootRoute
     }
-    '/dist/login': {
-      id: '/dist/login'
-      path: '/dist/login'
-      fullPath: '/dist/login'
-      preLoaderRoute: typeof DistLoginImport
-      parentRoute: typeof rootRoute
-    }
-    '/dist/signup': {
-      id: '/dist/signup'
-      path: '/dist/signup'
-      fullPath: '/dist/signup'
-      preLoaderRoute: typeof DistSignupImport
-      parentRoute: typeof rootRoute
-    }
     '/files/$file-id': {
       id: '/files/$file-id'
       path: '/files/$file-id'
       fullPath: '/files/$file-id'
       preLoaderRoute: typeof FilesFileIdImport
-      parentRoute: typeof rootRoute
-    }
-    '/dist/': {
-      id: '/dist/'
-      path: '/dist'
-      fullPath: '/dist'
-      preLoaderRoute: typeof DistIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/files/dist/$file-id': {
-      id: '/files/dist/$file-id'
-      path: '/files/dist/$file-id'
-      fullPath: '/files/dist/$file-id'
-      preLoaderRoute: typeof FilesDistFileIdImport
       parentRoute: typeof rootRoute
     }
   }
@@ -139,22 +83,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/dist/login': typeof DistLoginRoute
-  '/dist/signup': typeof DistSignupRoute
   '/files/$file-id': typeof FilesFileIdRoute
-  '/dist': typeof DistIndexRoute
-  '/files/dist/$file-id': typeof FilesDistFileIdRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/dist/login': typeof DistLoginRoute
-  '/dist/signup': typeof DistSignupRoute
   '/files/$file-id': typeof FilesFileIdRoute
-  '/dist': typeof DistIndexRoute
-  '/files/dist/$file-id': typeof FilesDistFileIdRoute
 }
 
 export interface FileRoutesById {
@@ -162,44 +98,15 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/dist/login': typeof DistLoginRoute
-  '/dist/signup': typeof DistSignupRoute
   '/files/$file-id': typeof FilesFileIdRoute
-  '/dist/': typeof DistIndexRoute
-  '/files/dist/$file-id': typeof FilesDistFileIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/login'
-    | '/signup'
-    | '/dist/login'
-    | '/dist/signup'
-    | '/files/$file-id'
-    | '/dist'
-    | '/files/dist/$file-id'
+  fullPaths: '/' | '/login' | '/signup' | '/files/$file-id'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/login'
-    | '/signup'
-    | '/dist/login'
-    | '/dist/signup'
-    | '/files/$file-id'
-    | '/dist'
-    | '/files/dist/$file-id'
-  id:
-    | '__root__'
-    | '/'
-    | '/login'
-    | '/signup'
-    | '/dist/login'
-    | '/dist/signup'
-    | '/files/$file-id'
-    | '/dist/'
-    | '/files/dist/$file-id'
+  to: '/' | '/login' | '/signup' | '/files/$file-id'
+  id: '__root__' | '/' | '/login' | '/signup' | '/files/$file-id'
   fileRoutesById: FileRoutesById
 }
 
@@ -207,22 +114,14 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
-  DistLoginRoute: typeof DistLoginRoute
-  DistSignupRoute: typeof DistSignupRoute
   FilesFileIdRoute: typeof FilesFileIdRoute
-  DistIndexRoute: typeof DistIndexRoute
-  FilesDistFileIdRoute: typeof FilesDistFileIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
-  DistLoginRoute: DistLoginRoute,
-  DistSignupRoute: DistSignupRoute,
   FilesFileIdRoute: FilesFileIdRoute,
-  DistIndexRoute: DistIndexRoute,
-  FilesDistFileIdRoute: FilesDistFileIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -238,11 +137,7 @@ export const routeTree = rootRoute
         "/",
         "/login",
         "/signup",
-        "/dist/login",
-        "/dist/signup",
-        "/files/$file-id",
-        "/dist/",
-        "/files/dist/$file-id"
+        "/files/$file-id"
       ]
     },
     "/": {
@@ -254,20 +149,8 @@ export const routeTree = rootRoute
     "/signup": {
       "filePath": "signup.tsx"
     },
-    "/dist/login": {
-      "filePath": "dist/login.js"
-    },
-    "/dist/signup": {
-      "filePath": "dist/signup.js"
-    },
     "/files/$file-id": {
       "filePath": "files/$file-id.tsx"
-    },
-    "/dist/": {
-      "filePath": "dist/index.js"
-    },
-    "/files/dist/$file-id": {
-      "filePath": "files/dist/$file-id.js"
     }
   }
 }
