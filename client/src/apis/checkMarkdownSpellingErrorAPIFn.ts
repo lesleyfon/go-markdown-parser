@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "@/lib/constants";
+
 export const FILE_KEY = "markdownfile";
 export const checkMarkdownSpellingErrorAPIFn = async ({ file }: { file: File }) => {
 	console.log(file);
@@ -19,7 +21,7 @@ export const checkMarkdownSpellingErrorAPIFn = async ({ file }: { file: File }) 
 		};
 	}
 
-	const response = await fetch("http://0.0.0.0:8080/api/v1/markdown", requestOptions);
+	const response = await fetch(`${API_BASE_URL}/api/v1/markdown`, requestOptions);
 
   if (!response.ok) {
     const errorResponse = await response.json();
