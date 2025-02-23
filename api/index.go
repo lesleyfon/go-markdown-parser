@@ -72,6 +72,13 @@ func SetupRouter(corsConfig *cors.Config) *gin.Engine {
 	routes.MarkdownParserRoutes(router)
 
 	// Add a health check route
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "Welcome to the API",
+			"message": "Home Route",
+		})
+	})
+	// Add a health check route
 	router.GET("/api/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "ok",
