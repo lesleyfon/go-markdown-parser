@@ -1,6 +1,7 @@
-import { inputFieldData } from "@/lib/constants";
 import { ReactFormExtendedApi } from "@tanstack/react-form";
 import { memo } from "react";
+
+import { inputFieldData } from "@/lib/constants";
 
 const AuthFormFieldGroup = memo(
 	({ form }: { form: ReactFormExtendedApi<{ email: string; password: string }> }) => {

@@ -1,8 +1,9 @@
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { createRootRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import AppSideBarWrapper, { AppSideBar } from "@/components/app-sidebar";
+
 import { authenticateUserFn } from "@/apis/authAPIFn";
+import AppSideBarWrapper, { AppSideBar } from "@/components/app-sidebar";
 import { AuthResponse, UnAuthenticateUserResponse } from "@/types";
 
 const queryClient = new QueryClient();

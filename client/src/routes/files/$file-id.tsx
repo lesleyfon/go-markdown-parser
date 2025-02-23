@@ -1,7 +1,8 @@
-import { fetchFile } from "@/apis/fetchFile";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
+
+import { fetchFile } from "@/apis/fetchFile";
 
 export interface FileDetail {
 	created_at: string;

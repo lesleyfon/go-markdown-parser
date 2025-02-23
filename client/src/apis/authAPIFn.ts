@@ -29,7 +29,7 @@ export async function loginFn({ email, password }: { email: string; password: st
 	return data;
 }
 
-export async function signupFn({ email, password }: { email: string; password: string }): Promise<AuthResponse> {
+export async function signupFn({ email, password }: { email: string; password: string }): Promise<AuthUser> {
 
 	const body = JSON.stringify({
 		email,

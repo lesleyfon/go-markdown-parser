@@ -1,4 +1,10 @@
+import { useQuery } from "@tanstack/react-query";
+import { Link, useLocation } from "@tanstack/react-router";
+import { File, Loader2 } from "lucide-react";
 import React, { useMemo } from "react";
+
+import { authenticateUserFn } from "@/apis/authAPIFn";
+import { fetchAllFiles } from "@/apis/fetchFile";
 import {
 	Sidebar,
 	SidebarContent,
@@ -10,13 +16,7 @@ import {
 	SidebarProvider,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { File, Loader2 } from "lucide-react";
-
-import { useQuery } from "@tanstack/react-query";
-import { Link, useLocation } from "@tanstack/react-router";
 import { AuthResponse, FilesResponse, UnAuthenticateUserResponse } from "@/types";
-import { authenticateUserFn } from "@/apis/authAPIFn";
-import { fetchAllFiles } from "@/apis/fetchFile";
 
 export function AppSideBar() {
 	const location = useLocation();

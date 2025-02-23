@@ -12,7 +12,7 @@ export const checkMarkdownSpellingErrorAPIFn = async ({ file }: { file: File }) 
 		body: formdata,
 		redirect: "follow" as RequestRedirect,
   } as RequestInit;
-  
+
 	const token = localStorage.getItem("auth-token");
 	if (token) {
 		requestOptions.headers = {
