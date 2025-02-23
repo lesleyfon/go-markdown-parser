@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "@/lib/constants";
-import { AuthResponse, UnAuthenticateUserResponse } from "@/types";
+import { AuthResponse, AuthUser, UnAuthenticateUserResponse } from "@/types";
 
 const myHeaders = new Headers();
 	myHeaders.append("Content-Type", "application/json");
@@ -7,11 +7,10 @@ const myHeaders = new Headers();
 const requestOptions = {
 	method: "POST",
 	headers: myHeaders,
-	
 	redirect: "follow" as RequestRedirect,
 };
 
-export async function loginFn({ email, password }: { email: string; password: string }): Promise<AuthResponse> {
+export async function loginFn({ email, password }: { email: string; password: string }): Promise<AuthUser> {
 	const body = JSON.stringify({
 		email,
 		password,
