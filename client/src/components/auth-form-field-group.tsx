@@ -14,7 +14,7 @@ const AuthFormFieldGroup = memo(
 					<>
 						<input
 							type={fieldData.type}
-							className=" outline"
+							className="outline"
 							name={field.name}
 							value={field.state.value}
 							onBlur={field.handleBlur}

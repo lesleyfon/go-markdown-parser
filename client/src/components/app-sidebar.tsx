@@ -44,7 +44,11 @@ export function AppSideBar() {
 					{filesQuery?.data?.files.map((item) => (
 						<SidebarMenuItem key={item.file_name}>
 							<SidebarMenuButton asChild>
-								<Link to="/files/$file-id" params={{ "file-id": item._id }}>
+								<Link
+									to="/files/$file-id"
+									params={{ "file-id": item._id }}
+									className="[&.active]:font-bold"
+								>
 									<File />
 									<span>{item.file_name}</span>
 								</Link>
