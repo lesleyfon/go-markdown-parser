@@ -15,15 +15,19 @@ func StartDB() *mongo.Client {
 	err := godotenv.Load(".env")
 
 	if err != nil {
-		log.Fatal("Error loading the .env file")
-
+		log.Println("Info: .env file not found, will use environment variables")
 	}
 
 	MongoURI := os.Getenv("MONGOURI")
 
+	if MongoURI == "" {
+		log.Fatal("MONGODB_URL environment variable is not set")
+	}
+
 	client, err := mongo.NewClient(options.Client().ApplyURI(MongoURI))
 
 	if err != nil {
+
 		log.Fatal("Error while connecting to Mongo: ", err.Error())
 	}
 
@@ -34,7 +38,7 @@ func StartDB() *mongo.Client {
 	err = client.Connect(ctx)
 
 	if err != nil {
-		log.Fatal()
+		log.Fatal("Error while connecting to Mongo: ", err.Error())
 	}
 
 	log.Println("Connected to MongoDB Successfully")
