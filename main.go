@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
@@ -12,8 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
-	"main.go/database"
-	"main.go/routes"
+	"main.go/api"
 )
 
 func getCorsOrigins() []string {
@@ -46,34 +44,26 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("Warning: .env file not found, using environment variables")
 	}
-
 	if PORT == "" {
 		PORT = "10000"
 	}
 
-	database.StartDB()
-
-	router := gin.Default()
-	router.Use(cors.New(cors.Config{
+	// Configure CORS
+	corsConfig := cors.Config{
 		AllowOrigins:     getCorsOrigins(),
 		AllowMethods:     []string{"PUT", "PATCH", "POST", "GET", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Authorization", "Content-Type", "Accept", "X-Requested-With"},
 		ExposeHeaders:    []string{"Content-Length", "Content-Type"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
-	}))
+	}
 
+	// Use the shared router setup with our custom CORS config
+	router := api.SetupRouter(&corsConfig)
+
+	// Add logger middleware for local development
 	router.Use(gin.Logger())
-	// Register Routes
-	routes.AuthRoutes(router)
-	routes.MarkdownParserRoutes(router)
-	// Test routes
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK,
-			gin.H{
-				"message": "Welcome to Markdown parser",
-			})
-	})
 
+	log.Printf("Server starting on port %s", PORT)
 	router.Run(fmt.Sprintf("0.0.0.0:%s", PORT))
 }
