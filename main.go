@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -47,7 +48,7 @@ func main() {
 	}
 
 	if PORT == "" {
-		PORT = "8080"
+		PORT = "10000"
 	}
 
 	database.StartDB()
@@ -74,5 +75,5 @@ func main() {
 			})
 	})
 
-	router.Run()
+	router.Run(fmt.Sprintf("0.0.0.0:%s", PORT))
 }
