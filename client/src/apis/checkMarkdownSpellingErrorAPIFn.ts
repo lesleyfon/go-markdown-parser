@@ -2,7 +2,6 @@ import { API_BASE_URL } from "@/lib/constants";
 
 export const FILE_KEY = "markdownfile";
 export const checkMarkdownSpellingErrorAPIFn = async ({ file }: { file: File }) => {
-	console.log(file);
 	const formdata = new FormData();
 	const filename = file.name;
 
