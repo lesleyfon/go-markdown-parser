@@ -1,6 +1,6 @@
 module go-markdown-parser
 
-go 1.21.0
+go 1.20
 
 toolchain go1.23.2
 
