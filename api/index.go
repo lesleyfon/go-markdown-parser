@@ -2,14 +2,15 @@ package api
 
 import (
 	"encoding/json"
-	"go-markdown-parser/database"
-	"go-markdown-parser/routes"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
+	"go-markdown-parser/database"
+	"go-markdown-parser/routes"
 )
 
 func getCorsOrigins() []string {
