@@ -3,6 +3,8 @@ package utils
 import (
 	"context"
 	"fmt"
+	"go-markdown-parser/database"
+	"go-markdown-parser/models"
 	"log"
 	"os"
 	"sync"
@@ -12,8 +14,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"main.go/database"
-	"main.go/models"
 )
 
 var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")

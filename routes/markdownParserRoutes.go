@@ -1,8 +1,9 @@
 package routes
 
 import (
+	"go-markdown-parser/controller"
+
 	"github.com/gin-gonic/gin"
-	"main.go/controller"
 )
 
 func MarkdownParserRoutes(router *gin.Engine) {

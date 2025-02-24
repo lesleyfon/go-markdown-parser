@@ -2,6 +2,10 @@ package controller
 
 import (
 	"context"
+	"go-markdown-parser/database"
+	"go-markdown-parser/models"
+	"go-markdown-parser/utils"
+
 	"log"
 	"net/http"
 	"strings"
@@ -12,9 +16,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"main.go/database"
-	"main.go/models"
-	"main.go/utils"
 )
 
 var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")

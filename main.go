@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
-	"main.go/api"
+	"go-markdown-parser/api"
 )
 
 func getCorsOrigins() []string {

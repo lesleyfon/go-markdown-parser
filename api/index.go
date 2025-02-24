@@ -2,14 +2,14 @@ package api
 
 import (
 	"encoding/json"
+	"go-markdown-parser/database"
+	"go-markdown-parser/routes"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"main.go/database"
-	"main.go/routes" // Update this to your module name
 )
 
 func getCorsOrigins() []string {
@@ -79,7 +79,7 @@ func SetupRouter(corsConfig *cors.Config) *gin.Engine {
 		})
 	})
 	// Add a health check route
-	router.GET("/api/health", func(c *gin.Context) {
+	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "ok",
 			"message": "API is running",
