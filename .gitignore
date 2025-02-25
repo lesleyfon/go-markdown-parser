@@ -35,3 +35,6 @@ go.work.sum
 
 # Deployment config
 deploy-config.sh
+
+# Workflow docs. TOBE DELETED
+workflow.md
