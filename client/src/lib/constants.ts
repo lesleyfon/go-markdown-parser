@@ -23,5 +23,7 @@ export const inputFieldData = [
 ];
 const APP_ENV = import.meta.env.VITE_APP_ENV
 const parsedAppEnv = JSON.parse(APP_ENV) as AppEnv
-
 export const API_BASE_URL = parsedAppEnv.API_BASE_URL
+
+// eslint-disable-next-line no-console
+console.log({API_BASE_URL})
