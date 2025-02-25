@@ -32,3 +32,6 @@ go.work.sum
 
 # Build Dir
 /tmp
+
+# Deployment config
+deploy-config.sh

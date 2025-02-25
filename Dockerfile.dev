@@ -1,0 +1,22 @@
+# Development Dockerfile
+FROM golang:1.23-alpine
+
+WORKDIR /app
+
+# Install git and gow
+RUN apk add --no-cache git \
+  && go install github.com/mitranim/gow@latest
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+ENV GIN_MODE=debug
+ENV PORT=8080
+
+# Run with gow
+# -v for verbose mode
+# -c to clear terminal on restart
+# -r for hotkey support
+CMD ["gow", "-v", "-c", "-r", "run", "."] 

@@ -1,0 +1,26 @@
+# Frontend/client files
+client/
+node_modules/
+
+# Development files
+.git/
+.gitignore
+.env
+.env.*
+*.md
+.vscode/
+.idea/
+
+# Test files
+testdata/
+*_test.go
+
+# Build files
+bin/
+tmp/
+dist/
+
+# Docker files
+Dockerfile
+Dockerfile.dev
+.dockerignore
