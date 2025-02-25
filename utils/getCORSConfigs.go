@@ -27,5 +27,7 @@ func GetCorsOrigins() []string {
 		return CORS_ALLOWED_ORIGINS
 	}
 
+	log.Printf("CORS origins: %v", CORS_ALLOWED_ORIGINS)
+
 	return CORS_ALLOWED_ORIGINS
 }
