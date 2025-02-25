@@ -3,6 +3,9 @@ package controller
 import (
 	"context"
 	"encoding/base64"
+	"go-markdown-parser/database"
+	"go-markdown-parser/models"
+	"go-markdown-parser/utils"
 	"io"
 	"log"
 	"net/http"
@@ -14,9 +17,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"main.go/database"
-	"main.go/models"
-	"main.go/utils"
 )
 
 var fileCollection *mongo.Collection = database.OpenCollection(database.Client, "file")
@@ -361,4 +361,12 @@ func SaveMarkdownFile(ctx context.Context, filename string, contents []byte, use
 	}
 
 	return nil
+}
+
+func Ping() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Pong",
+		})
+	}
 }

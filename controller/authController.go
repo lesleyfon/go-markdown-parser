@@ -7,14 +7,15 @@ import (
 	"strings"
 	"time"
 
+	"go-markdown-parser/database"
+	"go-markdown-parser/models"
+	"go-markdown-parser/utils"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"main.go/database"
-	"main.go/models"
-	"main.go/utils"
 )
 
 var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
@@ -58,7 +59,7 @@ func SignUpController() gin.HandlerFunc {
 			c.JSON(
 				http.StatusBadRequest,
 				gin.H{
-					"error":   "error occurred while checking for this email",
+					"error":   emailErr.Error(),
 					"status":  http.StatusBadRequest,
 					"message": "error occurred while checking for this email",
 				},
