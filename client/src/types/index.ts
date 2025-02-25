@@ -1,3 +1,6 @@
+import { FieldApi, ReactFormExtendedApi } from "@tanstack/react-form";
+import { UseMutationResult } from "@tanstack/react-query";
+
 // Auth types
 export interface AuthUser {
     email: string;
@@ -36,3 +39,34 @@ export interface FilesResponse {
     message: string;
     status: number;
 } 
+
+export interface SignupLoginFormData {
+    email: string;
+    password: string;
+}
+
+
+export type ChangeInputParamType = FieldApi<
+	{
+		markdownfile: File | undefined;
+	},
+	"markdownfile",
+	undefined,
+	undefined,
+	File
+>;
+
+
+export interface HandleSignupLoginFormSubmitProps {
+    event: React.FormEvent<HTMLFormElement>;
+    form: ReactFormExtendedApi<SignupLoginFormData, undefined>;
+    mutation: UseMutationResult<AuthUser, Error, SignupLoginFormData, unknown>;
+}
+
+export interface FileAPIMutationStatusProps {
+    mutation: UseMutationResult<unknown, Error, { file: File }, unknown>;
+}
+
+export interface AuthenticationStatusProps {
+    mutation: UseMutationResult<unknown, Error, SignupLoginFormData, unknown>;
+}

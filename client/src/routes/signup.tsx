@@ -5,6 +5,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { signupFn } from "@/apis/authAPIFn";
 import AuthFormFieldGroup from "@/components/auth-form-field-group";
 import { AuthenticationStatus } from "@/components/authentication-status";
+import { handleSignupLoginFormSubmit } from "@/lib/utils";
 
 export const Route = createFileRoute("/signup")({
 	component: Signup,
@@ -39,16 +40,7 @@ export default function Signup() {
 		<div>
 			<h1>Signup</h1>
 			<form
-				onSubmit={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
-
-					mutation.mutate({
-						email: form.getFieldValue("email"),
-						password: form.getFieldValue("password"),
-					});
-					form.handleSubmit();
-				}}
+				onSubmit={(e) => handleSignupLoginFormSubmit(e, form, mutation)}
 				className=" flex flex-col gap-2"
 			>
 				<AuthFormFieldGroup form={form} />

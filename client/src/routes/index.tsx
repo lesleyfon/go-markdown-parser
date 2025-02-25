@@ -1,5 +1,5 @@
-import { FieldApi, useForm } from "@tanstack/react-form";
-import { useMutation, UseMutationResult } from "@tanstack/react-query";
+import { useForm } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -7,20 +7,11 @@ import { checkMarkdownSpellingErrorAPIFn, FILE_KEY } from "@/apis/checkMarkdownS
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { documentValidator } from "@/lib/formValidations";
+import { ChangeInputParamType, FileAPIMutationStatusProps } from "@/types";
 
 export const Route = createFileRoute("/")({
 	component: Index,
 });
-
-type ChangeInputParamType = FieldApi<
-	{
-		markdownfile: File | undefined;
-	},
-	"markdownfile",
-	undefined,
-	undefined,
-	File
->;
 
 function Index() {
 	const [srcDoc, setSrcDoc] = useState<string>("");
@@ -115,11 +106,7 @@ function Index() {
 	);
 }
 
-export function FileAPIMutationStatus({
-	mutation,
-}: {
-	mutation: UseMutationResult<unknown, Error, { file: File }, unknown>;
-}) {
+export function FileAPIMutationStatus({ mutation }: FileAPIMutationStatusProps) {
 	return (
 		<div>
 			<p className="text-blue-300 text-left">

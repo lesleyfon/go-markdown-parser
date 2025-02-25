@@ -1,10 +1,6 @@
-import { UseMutationResult } from "@tanstack/react-query";
+import { AuthenticationStatusProps } from "@/types";
 
-export function AuthenticationStatus({
-	mutation,
-}: {
-	mutation: UseMutationResult<unknown, Error, { email: string; password: string }, unknown>;
-}) {
+export function AuthenticationStatus({ mutation }: AuthenticationStatusProps) {
 	return (
 		<div>
 			<p className="text-blue-300 text-left">{mutation.isPending && "Loading..."}</p>
