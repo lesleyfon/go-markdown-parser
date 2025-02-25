@@ -70,3 +70,7 @@ export interface FileAPIMutationStatusProps {
 export interface AuthenticationStatusProps {
     mutation: UseMutationResult<unknown, Error, SignupLoginFormData, unknown>;
 }
+
+export interface AppEnv {
+    API_BASE_URL: string;
+}

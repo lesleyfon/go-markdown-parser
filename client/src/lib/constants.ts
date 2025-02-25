@@ -1,4 +1,7 @@
-import { emailValidator, passwordValidator } from "./formValidations";
+import { emailValidator, passwordValidator } from "@/lib/formValidations";
+import { AppEnv } from "@/types";
+
+
 
 export const inputFieldData = [
 	{
@@ -18,6 +21,7 @@ export const inputFieldData = [
 		},
 	},
 ];
+const APP_ENV = import.meta.env.VITE_APP_ENV
+const parsedAppEnv = JSON.parse(APP_ENV) as AppEnv
 
-
-export const API_BASE_URL = "http://0.0.0.0:8080";
+export const API_BASE_URL = parsedAppEnv.API_BASE_URL
